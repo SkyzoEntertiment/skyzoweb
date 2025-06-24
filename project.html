@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skyzo - Hosting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 20, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .logo .s {
+            color: #e94560;
+        }
+
+        .logo .w {
+            color: #4cc9f0;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .mobile-menu {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            background: rgba(20, 20, 40, 0.95);
+            border-radius: 10px;
+            padding: 10px 0;
+            transform: scale(0);
+            transform-origin: top right;
+            transition: transform 0.3s ease;
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            /* Tambahkan properti untuk efek menurun */
+            display: flex; /* Menggunakan flexbox untuk mengatur item */
+            flex-direction: column; /* Item akan tersusun secara kolom */
+            overflow: hidden; /* Sembunyikan konten yang meluap */
+        }
+
+        .mobile-menu.active {
+            transform: scale(1);
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            text-align: right;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.3s ease, opacity 0.3s ease; /* Tambahkan transisi untuk transform dan opacity */
+            transform: translateY(-100%); /* Sembunyikan di atas secara default */
+            opacity: 0; /* Sembunyikan opacity secara default */
+        }
+
+        .mobile-menu.active .menu-item {
+            transform: translateY(0); /* Tampilkan ke posisi normal */
+            opacity: 1; /* Tampilkan opacity */
+            /* Tambahkan delay untuk efek berurutan */
+            transition-delay: var(--item-delay); /* Menggunakan custom property untuk delay */
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .page {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            min-height: calc(100vh - 70px);
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease; /* Tambahkan transisi untuk transform */
+            overflow-y: auto;
+            transform: scale(0.9); /* Zoom out sedikit saat tidak aktif */
+        }
+
+        .page.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1); /* Zoom in ke ukuran normal saat aktif */
+        }
+
+        .home-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .home-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .home-desc {
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: block;
+            padding: 15px;
+            background: linear-gradient(to right, #e94560, #f8456d);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .social-media {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .social-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .social-icon img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .products-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .product-title {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .product-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .product-features li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-features i {
+            color: #4cc9f0;
+            margin-right: 10px;
+        }
+
+        .contact-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-info {
+            margin-bottom: 25px;
+        }
+
+        .contact-info p {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-info i {
+            color: #4cc9f0;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: #25D366;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            z-index: 100;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Chrome fixes */
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            .page {
+                -webkit-transform: translateZ(0);
+            }
+            
+            .mobile-menu {
+                -webkit-backface-visibility: hidden;
+            }
+        }
+        @media (max-width: 480px) {
+            .home-title {
+                font-size: 2rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+        }
+        /* New styles for RAM selection and Payment Methods */
+        .ram-selection {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .ram-selection label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .ram-selection select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            appearance: none; /* Remove default select arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20512%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M119.5%20326.9L3.5%20209.1c-4.7-4.7-4.7-12.3%200-17l7.1-7.1c4.7-4.7%2012.3-4.7%2017%200L128%20297.9l100.4-100.9c4.7-4.7%2012.3-4.7%2017%200l7.1%207.1c4.7%204.7%204.7%2012.3%200%2017L136.5%20326.9c-4.7%204.6-12.3%204.6-17-.1z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            cursor: pointer;
+        }
+
+        .ram-selection select option {
+            background-color: #1a1a2e; /* Darker background for options */
+            color: white;
+        }
+
+        /* Payment method selection */
+        .payment-method-selection {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .payment-method-selection label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .payment-method-selection select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20512%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M119.5%20326.9L3.5%20209.1c-4.7-4.7-4.7-12.3%200-17l7.1-7.1c4.7-4.7%2012.3-4.7%2017%200L128%20297.9l100.4-100.9c4.7-4.7%2012.3-4.7%2017%200l7.1%207.1c4.7%204.7%204.7%2012.3%200%2017L136.5%20326.9c-4.7%204.6-12.3%204.6-17-.1z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            cursor: pointer;
+        }
+
+        .payment-method-selection select option {
+            background-color: #1a1a2e;
+            color: white;
+        }
+
+        .payment-details {
+            text-align: center;
+            margin-top: 30px;
+            display: none; /* Hidden by default */
+        }
+        .payment-details.active {
+            display: block;
+        }
+
+        .payment-details img {
+            width: 150px; /* Adjusted for logos */
+            height: auto;
+            object-fit: contain;
+            border: none; /* Removed border for logos */
+            padding: 0; /* Removed padding for logos */
+            background-color: transparent; /* Transparent background for logos */
+            margin-bottom: 20px;
+        }
+
+        .payment-details p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        .payment-details .btn {
+            margin-top: 20px;
+        }
+
+        /* New styles for Script Free section */
+        .script-free-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        /* Styles for the new script selection dropdown */
+        .script-selection {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .script-selection label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .script-selection select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            appearance: none; /* Remove default select arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20512%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M119.5%20326.9L3.5%20209.1c-4.7-4.7-4.7-12.3%200-17l7.1-7.1c4.7-4.7%2012.3-4.7%2017%200L128%20297.9l100.4-100.9c4.7-4.7%2012.3-4.7%2017%200l7.1%207.1c4.7%204.7%204.7%2012.3%200%2017L136.5%20326.9c-4.7%204.6-12.3%204.6-17-.1z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            cursor: pointer;
+        }
+
+        .script-selection select option {
+            background-color: #1a1a2e; /* Darker background for options */
+            color: white;
+        }
+
+        /* New styles for Script Download Page */
+        .script-download-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center; /* Center align content within the card */
+        }
+
+        .script-download-card .product-title {
+            color: #e94560; /* Use a distinct color for script titles */
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .script-download-card .product-image {
+            width: 100%;
+            height: 180px; /* Slightly different height for visual distinction */
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .script-download-card .product-features {
+            list-style: none;
+            margin-bottom: 20px;
+            padding: 0; /* Remove default padding */
+            text-align: left; /* Align features to the left */
+        }
+
+        .script-download-card .product-features li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .script-download-card .product-features i {
+            color: #4cc9f0;
+            margin-right: 10px;
+        }
+
+        .script-download-card .download-btn {
+            display: block;
+            padding: 12px;
+            background: linear-gradient(to right, #4cc9f0, #007bff); /* Different gradient for download button */
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3); /* Adjusted shadow color */
+        }
+
+        .script-download-card .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 201, 240, 0.4); /* Adjusted shadow color */
+        }
+
+        /* New styles for image upload */
+        .upload-proof {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #4cc9f0, #007bff); /* Blue gradient */
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 201, 240, 0.4);
+        }
+
+        .hidden-input {
+            display: none; /* Hide the default file input */
+        }
+
+        .image-preview {
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            display: none; /* Hidden by default */
+            position: relative;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .image-preview.active {
+            display: block; /* Show when active */
+        }
+
+        .preview-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .remove-img {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo">
+            <span class="s">S</span>kyzo<span class="w">Website</span>
+        </div>
+        <button class="menu-btn" id="menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="mobile-menu" id="mobile-menu">
+            <div class="menu-item" onclick="showPage('home')">Home</div>
+            <div class="menu-item" onclick="showPage('products')">List Produk</div>
+            <div class="menu-item" onclick="showPage('script-download')">Free script</div> <!-- New menu item -->
+            <div class="menu-item" onclick="showPage('contact')">Kontak</div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <section id="home-page" class="page active">
+        <div class="home-content">
+            <h1 class="home-title">
+                <span class="s">S</span>KYZO <span class="w">WEBSITE</span>
+            </h1>
+            <p class="home-desc">
+                Solusi hosting profesional dengan kecepatan tinggi dan dukungan 24/7 untuk kebutuhan bisnis online Anda.
+            </p>
+            
+            <div class="btn-group">
+                <a href="#" class="btn" onclick="showPage('products')">
+                    <i class="fas fa-list"></i> List Produk
+                </a>
+                <a href="#" class="btn" onclick="showPage('contact')">
+                    <i class="fas fa-phone-alt"></i> Hubungi Kami
+                </a>
+            </div>
+
+            <div class="social-media">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram"> 
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Page -->
+    <section id="products-page" class="page">
+        <div class="products-container">
+            <h2 class="page-title">Daftar Produk</h2>
+            
+            <div class="product-card">
+                <h3 class="product-title">Panel Hosting</h3>
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                     alt="Panel Hosting" class="product-image">
+                <div class="ram-selection">
+                    <label for="ram-select">Pilih RAM Server:</label>
+                    <select id="ram-select">
+                        <option value="1GB">1 GB</option>
+                        <option value="2GB">2 GB</option>
+                        <option value="3GB">3 GB</option>
+                        <option value="4GB">4 GB</option>
+                        <option value="5GB">5 GB</option>
+                        <option value="6GB">6 GB</option>
+                        <option value="7GB">7 GB</option>
+                        <option value="8GB">8 GB</option>
+                        <option value="9GB">9 GB</option>
+                        <option value="10GB">10 GB</option>
+                        <option value="Unlimited">Unlimited</option>
+                    </select>
+                </div>
+                <ul class="product-features">
+                    <li><i class="fas fa-server"></i> SSD Storage</li>
+                    <li><i class="fas fa-tachometer-alt"></i> Kecepatan Tinggi</li>
+                    <li><i class="fas fa-shield-alt"></i> SSL Gratis</li>
+                </ul>
+                <a href="#" class="btn" id="buy-panel-btn">
+                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                </a>
+
+                <!-- START: Payment Method Selection -->
+                <div class="payment-method-selection" id="payment-method-selection">
+                    <label for="payment-select">Pilih Metode Pembayaran:</label>
+                    <select id="payment-select">
+                        <option value="dana">DANA</option>
+                        <option value="gopay">GoPay</option>
+                        <option value="ovo">OVO</option>
+                    </select>
+                </div>
+                <!-- END: Payment Method Selection -->
+
+                <!-- START: Payment Details for DANA -->
+                <div class="payment-details" id="payment-dana">
+                    <h3>Pembayaran DANA</h3>
+                    <!-- Ikon DANA -->
+                    <img src="https://files.catbox.moe/5qg5rz.png" alt="DANA Logo">
+                    <p>Transfer ke nomor DANA berikut:</p>
+                    <p><strong>085752107633</strong></p>
+                    <p>Jumlah yang harus dibayar: <strong id="dana-amount">Rp 0</strong></p>
+                    <div class="upload-proof">
+                        <label for="upload-dana" class="upload-btn">
+                            <i class="fas fa-upload"></i> Upload Bukti Transfer
+                        </label>
+                        <input type="file" id="upload-dana" accept="image/*" class="hidden-input">
+                        <div class="image-preview" id="preview-dana">
+                            <img src="" alt="Bukti Transfer" class="preview-img">
+                            <span class="remove-img" title="Hapus Gambar">&times;</span>
+                        </div>
+                    </div>
+                    <p>Setelah transfer dan upload bukti, klik tombol di bawah untuk konfirmasi.</p>
+                    <a href="#" class="btn confirm-payment-btn" data-method="dana">
+                        <i class="fas fa-check-circle"></i> Konfirmasi Pembayaran DANA
+                    </a>
+                </div>
+                <!-- END: Payment Details for DANA -->
+
+                <!-- START: Payment Details for GoPay -->
+                <div class="payment-details" id="payment-gopay">
+                    <h3>Pembayaran GoPay</h3>
+                    <!-- Ikon GoPay -->
+                    <img src="https://files.catbox.moe/pjdjeu.png" alt="GoPay Logo">
+                    <p>Transfer ke nomor GoPay berikut:</p>
+                    <p><strong>081234567890</strong></p> <!-- GANTI DENGAN NOMOR GOPAY ANDA -->
+                    <p>Jumlah yang harus dibayar: <strong id="gopay-amount">Rp 0</strong></p>
+                    <div class="upload-proof">
+                        <label for="upload-gopay" class="upload-btn">
+                            <i class="fas fa-upload"></i> Upload Bukti Transfer
+                        </label>
+                        <input type="file" id="upload-gopay" accept="image/*" class="hidden-input">
+                        <div class="image-preview" id="preview-gopay">
+                            <img src="" alt="Bukti Transfer" class="preview-img">
+                            <span class="remove-img" title="Hapus Gambar">&times;</span>
+                        </div>
+                    </div>
+                    <p>Setelah transfer dan upload bukti, klik tombol di bawah untuk konfirmasi.</p>
+                    <a href="#" class="btn confirm-payment-btn" data-method="gopay">
+                        <i class="fas fa-check-circle"></i> Konfirmasi Pembayaran GoPay
+                    </a>
+                </div>
+                <!-- END: Payment Details for GoPay -->
+
+                <!-- START: Payment Details for OVO -->
+                <div class="payment-details" id="payment-ovo">
+                    <h3>Pembayaran OVO</h3>
+                    <!-- Ikon OVO -->
+                    <img src="https://files.catbox.moe/r9x343.png" alt="OVO Logo">
+                    <p>Transfer ke nomor OVO berikut:</p>
+                    <p><strong>087654321098</strong></p> <!-- GANTI DENGAN NOMOR OVO ANDA -->
+                    <p>Jumlah yang harus dibayar: <strong id="ovo-amount">Rp 0</strong></p>
+                    <div class="upload-proof">
+                        <label for="upload-ovo" class="upload-btn">
+                            <i class="fas fa-upload"></i> Upload Bukti Transfer
+                        </label>
+                        <input type="file" id="upload-ovo" accept="image/*" class="hidden-input">
+                        <div class="image-preview" id="preview-ovo">
+                            <img src="" alt="Bukti Transfer" class="preview-img">
+                            <span class="remove-img" title="Hapus Gambar">&times;</span>
+                        </div>
+                    </div>
+                    <p>Setelah transfer dan upload bukti, klik tombol di bawah untuk konfirmasi.</p>
+                    <a href="#" class="btn confirm-payment-btn" data-method="ovo">
+                        <i class="fas fa-check-circle"></i> Konfirmasi Pembayaran OVO
+                    </a>
+                </div>
+                <!-- END: Payment Details for OVO -->
+
+            </div>
+            
+            <div class="product-card">
+                <h3 class="product-title">Business Package</h3>
+                <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                     alt="Business Hosting" class="product-image">
+                <ul class="product-features">
+                    <li><i class="fas fa-server"></i> 5 GB SSD Storage</li>
+                    <li><i class="fas fa-tachometer-alt"></i> Kecepatan Ekstra</li>
+                    <li><i class="fas fa-shield-alt"></i> SSL & Backup</li>
+                </ul>
+                <a href="https://wa.me/6285752149527?text=Saya%20tertarik%20dengan%20Business%20Package" class="btn">
+                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                </a>
+            </div>
+            
+            <div class="product-card">
+                <h3 class="product-title">Bot Whatsapp</h3>
+                <img src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                     alt="Script bot wa" class="product-image">
+                <ul class="product-features">
+                    <li><i class="fas fa-server"></i> The Devils ( Exploration )</li>
+                    <li><i class="fas fa-tachometer-alt"></i> Support Wa Bussiness</li>
+                    <li><i class="fas fa-shield-alt"></i> Database Github</li>
+                </ul>
+                <a href="https://wa.me/6285752149527?text=Saya%20tertarik%20dengan%20Business%20Package" class="btn">
+                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                </a>
+            </div>
+            
+            <div class="social-media">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram">
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Script Download Page -->
+    <section id="script-download-page" class="page">
+        <div class="products-container">
+            <h2 class="page-title">Script Free</h2>
+
+            <div class="script-download-card">
+                <h3 class="product-title">Script Free V1</h3>
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" alt="Free ScriptV1" class="product-image">
+                <ul class="product-features">
+                    <li><i class="fas fa-code"></i> Kode Bersih Tanpa Backdoor</li>
+                    <li><i class="fas fa-mobile-alt"></i> Responsif Untuk Whatsapp Messager</li>
+                    <li><i class="fas fa-palette"></i> Desain Modern & Minimalis</li>
+                </ul>
+                <a href="https://www.mediafire.com/file/le1x9g67iax1ai5/SC_JPMCH_MARCELEVEN_V4.0.zip/file" class="btn download-btn" target="_blank"><i class="fas fa-download"></i> Unduh Sekarang</a>
+            </div>         
+
+            <div class="social-media" style="margin-top: 30px;">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram">
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Page -->
+    <section id="contact-page" class="page">
+        <div class="contact-container">
+            <h2 class="page-title">Hubungi Kami</h2>
+            
+            <div class="contact-card">
+                <div class="contact-info">
+                    <h3 style="text-align: center; margin-bottom: 20px;">Tim Support Skyzo</h3>
+                    <p><i class="fas fa-phone-alt"></i> +62 857 5214 9527</p>
+                    <p><i class="fas fa-envelope"></i> support@skyzo-website.com</p>
+                    <p style="margin-top: 20px; text-align: center;">Kami siap membantu Anda 24/7 untuk kebutuhan hosting Anda.</p>
+                </div>
+                
+                <a href="https://wa.me/6285752149527" class="btn">
+                    <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                </a>
+            </div>
+            
+            <div class="social-media" style="margin-top: 30px;">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram">
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/6285752149527" class="whatsapp-btn">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile Menu Toggle
+        const menuBtn = document.getElementById('menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuItems = mobileMenu.querySelectorAll('.menu-item'); // Dapatkan semua item menu
+
+        menuBtn.addEventListener('click', function() {
+            mobileMenu.classList.toggle('active');
+
+            // Atur delay untuk setiap item menu saat menu dibuka
+            if (mobileMenu.classList.contains('active')) {
+                menuItems.forEach((item, index) => {
+                    item.style.setProperty('--item-delay', `${index * 0.05}s`); // Delay 0.05s per item
+                });
+            } else {
+                // Reset delay saat menu ditutup (opsional, agar transisi menutup juga berurutan)
+                menuItems.forEach((item) => {
+                    item.style.setProperty('--item-delay', '0s');
+                });
+            }
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.navbar') && mobileMenu.classList.contains('active')) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId + '-page').classList.add('active');
+            
+            // Close mobile menu
+            mobileMenu.classList.remove('active');
+        }
+        // Prevent default for buttons
+        document.querySelectorAll('[href="#"]').forEach(btn => {
+            btn.addEventListener('click', e => e.preventDefault());
+        });
+
+        // --- JavaScript for Panel Hosting Purchase with Multiple Payment Methods ---
+        const ramSelect = document.getElementById('ram-select');
+        const buyPanelBtn = document.getElementById('buy-panel-btn');
+        const paymentMethodSelection = document.getElementById('payment-method-selection');
+        const paymentSelect = document.getElementById('payment-select');
+        const paymentDetailsDivs = document.querySelectorAll('.payment-details'); // All payment detail sections
+        const confirmPaymentBtns = document.querySelectorAll('.confirm-payment-btn'); // All confirm buttons
+
+        // Simulate prices based on RAM selection
+        const ramPrices = {
+            '1GB': 2000,
+            '2GB': 3000,
+            '3GB': 4000,
+            '4GB': 5000,
+            '5GB': 6000,
+            '6GB': 7000,
+            '7GB': 8000,
+            '8GB': 9000, 
+            '9GB': 10000,
+            '10GB': 11000,
+            'Unlimited': 20000, 
+        };
+
+        // Payment numbers for each method
+        const paymentNumbers = {
+            'dana': '6285752107633', // Your DANA number
+            'gopay': '6281234567890', // GANTI DENGAN NOMOR GOPAY ANDA
+            'ovo': '6287654321098'   // GANTI DENGAN NOMOR OVO ANDA
+        };
+
+        let selectedRam = ramSelect.value;
+        let currentPrice = ramPrices[selectedRam];
+
+        // Function to update displayed price for all payment methods
+        function updatePaymentAmounts() {
+            document.getElementById('dana-amount').textContent = `Rp ${currentPrice.toLocaleString('id-ID')}`;
+            document.getElementById('gopay-amount').textContent = `Rp ${currentPrice.toLocaleString('id-ID')}`;
+            document.getElementById('ovo-amount').textContent = `Rp ${currentPrice.toLocaleString('id-ID')}`;
+        }
+
+        // Update price when RAM selection changes
+        ramSelect.addEventListener('change', function() {
+            selectedRam = this.value;
+            currentPrice = ramPrices[selectedRam];
+            updatePaymentAmounts(); // Update amounts when RAM changes
+        });
+
+        // Show payment method selection when "Pesan Sekarang" is clicked
+        buyPanelBtn.addEventListener('click', function() {
+            paymentMethodSelection.classList.add('active');
+            // Hide all payment details initially
+            paymentDetailsDivs.forEach(div => div.classList.remove('active'));
+            // Show the default selected payment method (DANA)
+            document.getElementById('payment-' + paymentSelect.value).classList.add('active');
+            updatePaymentAmounts(); // Ensure amounts are updated
+            
+            // Scroll to payment method selection
+            paymentMethodSelection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // Handle change in payment method selection
+        paymentSelect.addEventListener('change', function() {
+            const selectedMethod = this.value;
+            // Hide all payment details
+            paymentDetailsDivs.forEach(div => div.classList.remove('active'));
+            // Show the selected payment method details
+            document.getElementById('payment-' + selectedMethod).classList.add('active');
+            
+            // Scroll to the newly active payment details
+            document.getElementById('payment-' + selectedMethod).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // --- START: Image Upload Functionality ---
+
+        function setupImageUpload(method) {
+            const uploadInput = document.getElementById(`upload-${method}`);
+            const imagePreviewDiv = document.getElementById(`preview-${method}`);
+            const previewImg = imagePreviewDiv.querySelector('.preview-img');
+            const removeImgBtn = imagePreviewDiv.querySelector('.remove-img');
+
+            uploadInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        imagePreviewDiv.classList.add('active');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImg.src = '';
+                    imagePreviewDiv.classList.remove('active');
+                }
+            });
+
+            removeImgBtn.addEventListener('click', function() {
+                previewImg.src = '';
+                imagePreviewDiv.classList.remove('active');
+                uploadInput.value = ''; // Clear the selected file
+            });
+        }
+
+        // Setup image upload for each payment method
+        setupImageUpload('dana');
+        setupImageUpload('gopay');
+        setupImageUpload('ovo');
+
+        // Modify the confirmation button click handler to check for image upload
+        confirmPaymentBtns.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault(); // Prevent default button behavior
+
+                const method = this.dataset.method;
+                const uploadInput = document.getElementById(`upload-${method}`);
+                const imagePreviewDiv = document.getElementById(`preview-${method}`); // Get the preview div
+
+                if (!uploadInput.files || uploadInput.files.length === 0) {
+                    alert('Mohon upload bukti transfer Anda sebelum konfirmasi pembayaran.');
+                    return; // Stop the process if no image is uploaded
+                }
+
+                // Original confirmation logic (from your existing script)
+                const whatsappNumber = paymentNumbers[method];
+                const paymentMethodName = method.toUpperCase();
+                const message = `Halo, saya sudah melakukan transfer ${paymentMethodName} untuk Panel Hosting dengan RAM ${selectedRam} sebesar Rp ${currentPrice.toLocaleString('id-ID')}. Mohon konfirmasi pesanan saya.`;
+
+                alert(`Konfirmasi pembayaran ${paymentMethodName} Anda sedang diproses. Mohon tunggu sebentar.`);
+
+                setTimeout(() => {
+                    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+                    window.open(whatsappUrl, '_blank');
+
+                    // Optionally, hide payment sections after redirection
+                    paymentMethodSelection.classList.remove('active');
+                    paymentDetailsDivs.forEach(div => div.classList.remove('active'));
+                    
+                    // Clear the uploaded image and input after successful confirmation
+                    const previewImg = imagePreviewDiv.querySelector('.preview-img');
+                    previewImg.src = '';
+                    imagePreviewDiv.classList.remove('active');
+                    uploadInput.value = '';
+
+                    alert('Terima kasih! Anda akan diarahkan ke WhatsApp untuk konfirmasi lebih lanjut.');
+                }, 2000);
+            });
+        });
+
+        // --- END: Image Upload Functionality ---
+
+        // Initial update of payment amounts when page loads
+        updatePaymentAmounts();
+
+        // --- Removed old JavaScript for Script Free Section ---
+        // const scriptSelect = document.getElementById('script-select'); // This element is removed
+        // const downloadScriptBtn = document.getElementById('download-script-btn'); // This element is removed
+
+        // No longer needed as we have direct download links on the new page
+        // const scriptDownloadLinks = {
+        //     'script1': 'https://example.com/downloads/script1.zip',
+        //     'script2': 'https://example.com/downloads/script2.zip',
+        //     'script3': 'https://example.com/downloads/script3.zip',
+        //     // Tambahkan link download untuk script lainnya di sini
+        // };
+
+        // downloadScriptBtn.addEventListener('click', function(e) {
+        //     e.preventDefault(); // Prevent default button behavior
+
+        //     const selectedScript = scriptSelect.value;
+        //     const downloadLink = scriptDownloadLinks[selectedScript];
+
+        //     if (downloadLink) {
+        //         alert('Link download untuk script ini tidak ditemukan.');
+        //     }
+        // });
+    </script>
+</body>
+</html>
