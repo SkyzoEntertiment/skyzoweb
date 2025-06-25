@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skyzo - Hosting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+            /* Transition for blur effect on body content */
+            transition: filter 0.3s ease; 
+        }
+
+        /* Blur effect class for body content */
+        body.blur-active > *:not(.navbar):not(.mobile-menu):not(.whatsapp-btn) {
+            filter: blur(5px); /* Adjust blur intensity as needed */
+            pointer-events: none; /* Disable interaction with blurred content */
+        }
+
+        /* Background Video Styles */
+        .background-video {
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            /* Perubahan di sini: */
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; /* Memastikan video menutupi seluruh area tanpa terdistorsi */
+            /* Akhir perubahan */
+            z-index: -1; /* Menempatkan video di belakang konten lainnya */
+            background-size: cover;
+            filter: brightness(0.7); /* Opsional: Sedikit meredupkan video agar teks lebih mudah dibaca */
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 10, 20, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between; /* Memisahkan search bar dan profile button */
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Profile Button (replacing menu-btn) */
+        .profile-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 50%;
+            overflow: hidden;
+            width: 50px; /* Ukuran default */
+            height: 50px; /* Ukuran default */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+            margin-left: 15px; /* Jarak dari search bar */
+            background-color: rgba(255, 255, 255, 0.1); /* Background default */
+            border: 2px solid #4cc9f0; /* Border default */
+            position: relative; /* Penting untuk positioning absolut gear */
+            z-index: 100; /* Pastikan tombol profil di atas konten lain */
+        }
+
+        .profile-btn:hover {
+            transform: scale(1.1); /* Sedikit membesar saat hover */
+        }
+
+        .profile-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .profile-btn i {
+            font-size: 1.8rem; /* Ukuran ikon default */
+            color: #ccc;
+        }
+
+        /* Gear Animation Styles (untuk tombol profil) */
+        .gear-animation-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%; /* Sesuaikan dengan ukuran tombol profil */
+            height: 100%; /* Sesuaikan dengan ukuran tombol profil */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; /* Agar tidak mengganggu klik pada tombol profil */
+            opacity: 0; /* Sembunyikan secara default */
+            transition: opacity 0.3s ease;
+        }
+
+        .gear-animation-container.active {
+            opacity: 1; /* Tampilkan saat aktif */
+        }
+
+        .gear-icon {
+            position: absolute;
+            font-size: 2.5rem; /* Ukuran roda gigi */
+            color: #4cc9f0; /* Warna roda gigi, bisa disesuaikan */
+            opacity: 0.7;
+            /* Transform akan diatur oleh JS */
+        }
+
+        .gear-1 {
+            top: 0;
+            left: 0;
+            /* transform akan diatur oleh JS */
+        }
+
+        .gear-2 {
+            bottom: 0;
+            right: 0;
+            /* transform akan diatur oleh JS */
+        }
+
+        /* Mobile Menu (now acts as profile dropdown) */
+        .mobile-menu {
+            position: fixed;
+            top: 70px;
+            right: 20px; /* Posisikan di kanan, di bawah profile button */
+            background: rgba(20, 20, 40, 0.95);
+            border-radius: 10px;
+            padding: 10px 0;
+            transform: scale(0);
+            transform-origin: top right; /* Animasi dari kanan atas */
+            transition: transform 0.3s ease;
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 180px; /* Lebar minimum agar konten tidak terlalu sempit */
+        }
+
+        .mobile-menu.active {
+            transform: scale(1);
+        }
+
+        .menu-item {
+            padding: 12px 25px;
+            text-align: right; /* Teks rata kanan */
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.3s ease, opacity 0.3s ease;
+            transform: translateY(-100%); /* Animasi masuk dari atas */
+            opacity: 0;
+        }
+
+        .mobile-menu.active .menu-item {
+            transform: translateY(0);
+            opacity: 1;
+            transition-delay: var(--item-delay); /* Delay untuk setiap item */
+        }
+
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Profile Logo Styles */
+        .profile-logo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end; /* Posisikan ke kanan */
+            padding: 12px 25px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(-100%);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            z-index: 1001;
+        }
+
+        .mobile-menu.active .profile-logo-wrapper {
+            transform: translateY(0);
+            opacity: 1;
+            transition-delay: 0s; /* Muncul tanpa delay */
+        }
+
+        .profile-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.1);
+            background-size: cover;
+            background-position: center;
+            border: 2px solid #4cc9f0;
+            cursor: pointer;
+            transition: transform 0.3s ease, width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #ccc;
+            overflow: visible; /* Agar gear bisa keluar dari batas lingkaran profil */
+            margin-bottom: 10px; /* Jarak antara logo dan opsi */
+            position: relative; /* Penting untuk positioning absolut gear di dropdown */
+        }
+
+        .profile-logo.expanded {
+            transform: scale(1.2); /* Sedikit membesar saat diklik */
+            border-color: #e94560;
+        }
+
+        .profile-logo-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            opacity: 0;
+            max-height: 0; /* Untuk efek slide-down */
+            overflow: hidden;
+            transition: opacity 0.3s ease, max-height 0.3s ease;
+            width: 100%; /* Agar opsi memenuhi lebar wrapper */
+            align-items: flex-end; /* Posisikan opsi ke kanan */
+        }
+
+        .profile-logo-options.active {
+            opacity: 1;
+            max-height: 100px; /* Cukup tinggi untuk menampung opsi */
+        }
+
+        .profile-logo-option {
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background 0.2s ease;
+            font-size: 0.9rem;
+            text-align: center; /* Teks opsi rata tengah */
+            width: 100%; /* Agar tombol memenuhi lebar wrapper */
+            background-color: #000;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .profile-logo-option:hover {
+            background-color: #333;
+        }
+
+        /* Gear Animation Styles (untuk dropdown profil) */
+        .gear-animation-container-dropdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120px; /* Ukuran kontainer gear di dropdown, lebih besar dari profil logo */
+            height: 120px;
+            pointer-events: none;
+            opacity: 0; /* Sembunyikan secara default */
+            transition: opacity 0.3s ease;
+            z-index: -1; /* Pastikan gear di belakang logo profil */
+        }
+
+        .gear-animation-container-dropdown.active {
+            opacity: 1; /* Tampilkan saat aktif */
+        }
+
+        .gear-icon-dropdown {
+            position: absolute;
+            font-size: 4rem; /* Ukuran roda gigi di dropdown, lebih besar */
+            color: rgba(76, 201, 240, 0.5); /* Warna roda gigi, sedikit transparan */
+            opacity: 0.7;
+            /* Transform akan diatur oleh JS */
+        }
+
+        .gear-dropdown-1 {
+            top: 0;
+            left: 0;
+            /* transform akan diatur oleh JS */
+        }
+
+        .gear-dropdown-2 {
+            bottom: 0;
+            right: 0;
+            /* transform akan diatur oleh JS */
+        }
+
+        /* Page Content Styles */
+        .page {
+            position: absolute;
+            top: 70px;
+            left: 0;
+            width: 100%;
+            min-height: calc(100vh - 70px);
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            overflow-y: auto;
+            transform: scale(0.9);
+        }
+
+        .page.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: scale(1);
+        }
+
+        .home-content {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .home-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .home-desc {
+            margin-bottom: 30px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: block;
+            padding: 15px;
+            background: linear-gradient(to right, #e94560, #f8456d);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(233, 69, 96, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .social-media {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .social-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .social-icon img {
+            width: 60%;
+            height: 60%;
+            object-fit: contain;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+
+        /* Products and Script Cards Styles */
+        .products-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+
+        .product-card, .script-download-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out, height 0.4s ease-out, margin-bottom 0.4s ease-out, padding 0.4s ease-out, border 0.4s ease-out;
+            will-change: opacity, transform, height;
+        }
+
+        .product-card.hidden, .script-download-card.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            height: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border: none;
+            pointer-events: none;
+        }
+
+        .product-title {
+            color: #4cc9f0;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .script-download-card .product-title {
+            color: #e94560; /* Distinct color for script titles */
+        }
+
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .script-download-card .product-image {
+            height: 180px; /* Slightly different height for visual distinction */
+        }
+
+        .product-features {
+            list-style: none;
+            margin-bottom: 20px;
+            padding: 0;
+            text-align: left;
+        }
+
+        .product-features li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .product-features i {
+            color: #4cc9f0;
+            margin-right: 10px;
+        }
+
+        .script-download-card .download-btn {
+            display: block;
+            padding: 12px;
+            background: linear-gradient(to right, #4cc9f0, #007bff);
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
+        }
+
+        .script-download-card .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 201, 240, 0.4);
+        }
+
+        /* Contact Page Styles */
+        .contact-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-info {
+            margin-bottom: 25px;
+        }
+
+        .contact-info p {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .contact-info i {
+            color: #4cc9f0;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* WhatsApp Button */
+        .whatsapp-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 60px;
+            height: 60px;
+            background: #25D366;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
+            z-index: 100;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Chrome fixes for smooth animations */
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            .page {
+                -webkit-transform: translateZ(0);
+            }
+            .mobile-menu {
+                -webkit-backface-visibility: hidden;
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 480px) {
+            .home-title {
+                font-size: 2rem;
+            }
+            .page-title {
+                font-size: 1.5rem;
+            }
+            /* Search container adjustments for small screens */
+            .search-container {
+                width: 100%; /* Full width on mobile */
+                max-width: calc(100% - 80px); /* Adjust width to fit mobile screen */
+            }
+            .search-container input {
+                width: calc(100% - 25px); /* Adjust input width for smaller icon/margin */
+            }
+        }
+
+        /* RAM Selection Styles */
+        .ram-selection {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .ram-selection label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .ram-selection select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20512%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M119.5%20326.9L3.5%20209.1c-4.7-4.7-4.7-12.3%200-17l7.1-7.1c4.7-4.7%2012.3-4.7%2017%200L128%20297.9l100.4-100.9c4.7-4.7%2012.3-4.7%2017%200l7.1%207.1c4.7%204.7%204.7%2012.3%200%2017L136.5%20326.9c-4.7%204.6-12.3%204.6-17-.1z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            cursor: pointer;
+        }
+
+        .ram-selection select option {
+            background-color: #1a1a2e;
+            color: white;
+        }
+
+        /* Payment Method Selection Styles */
+        .payment-method-selection {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .payment-method-selection label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .payment-method-selection select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20256%20512%22%3E%3Cpath%20fill%3D%22%23ffffff%22%20d%3D%22M119.5%20326.9L3.5%20209.1c-4.7-4.7-4.7-12.3%200-17l7.1-7.1c4.7-4.7%2012.3-4.7%2017%200L128%20297.9l100.4-100.9c4.7-4.7%2012.3-4.7%2017%200l7.1%207.1c4.7%204.7%204.7%2012.3%200%2017L136.5%20326.9c-4.7%204.6-12.3%204.6-17-.1z%22%2F%3E%3C%2Fsvg%3E');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            cursor: pointer;
+        }
+
+        .payment-method-selection select option {
+            background-color: #1a1a2e;
+            color: white;
+        }
+
+        /* Payment Details Styles */
+        .payment-details {
+            text-align: center;
+            margin-top: 30px;
+            display: none; /* Hidden by default */
+        }
+        .payment-details.active {
+            display: block;
+        }
+        .payment-details img {
+            width: 150px;
+            height: auto;
+            object-fit: contain;
+            border: none;
+            padding: 0;
+            background-color: transparent;
+            margin-bottom: 20px;
+        }
+        .payment-details p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+        .payment-details .btn {
+            margin-top: 20px;
+        }
+
+        /* Image Upload Styles */
+        .upload-proof {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .upload-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #4cc9f0, #007bff);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
+        }
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 201, 240, 0.4);
+        }
+        .hidden-input {
+            display: none;
+        }
+        .image-preview {
+            margin-top: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px;
+            display: none;
+            position: relative;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .image-preview.active {
+            display: block;
+        }
+        .preview-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto;
+        }
+        .remove-img {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        /* Search Bar Specific Styles (No animation for width) */
+        .search-container {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 25px; /* Smooth rounded corners */
+            padding: 5px 10px;
+            width: 200px; /* Fixed width for desktop */
+            max-width: 300px; /* Max width for desktop */
+            transition: box-shadow 0.3s ease-out; /* Only transition for shadow */
+            margin-right: 15px;
+            position: relative;
+        }
+
+        .search-container i {
+            color: rgba(255, 255, 255, 0.7);
+            margin-right: 10px; /* Fixed margin */
+        }
+
+        .search-container input {
+            background: none;
+            border: none;
+            outline: none;
+            color: white;
+            padding: 8px 0;
+            width: calc(100% - 30px); /* Fixed width for input text (container width - icon width - margin) */
+            font-size: 1rem;
+            opacity: 1; /* Always visible */
+        }
+
+        .search-container input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+            animation: blink-placeholder 1.5s infinite alternate; /* Smooth blinking placeholder animation */
+        }
+
+        @keyframes blink-placeholder {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Active state for search bar (when focused/clicked) - only for highlight */
+        .search-container.active {
+            box-shadow: 0 0 0 2px #4cc9f0; /* Highlight border */
+        }
+
+        /* Styles for verification status message */
+        .verification-status {
+            margin-top: 15px;
+            font-weight: bold;
+            display: none; /* Hidden by default */
+            text-align: center;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        /* UPDATED: Styles for Scroll Animation */
+        .scroll-animate {
+            opacity: 0; /* Start hidden */
+            transform: translateY(40px); /* Start further below for a more noticeable slide-up */
+            /* Adjusted transition for smoother effect */
+            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            will-change: opacity, transform; /* Optimize for animation */
+        }
+
+        .scroll-animate.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Optional: Staggered animation for product/script cards */
+        .product-card.scroll-animate,
+        .script-download-card.scroll-animate,
+        .contact-card.scroll-animate {
+            /* Initial state is already defined by .scroll-animate */
+            /* Delay will be added dynamically by JavaScript */
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Video -->
+    <video autoplay loop muted class="background-video">
+        <source src="https://files.catbox.moe/ww2pbj.mp4" type="video/mp4">
+        <!-- Anda bisa menambahkan lebih banyak format video untuk kompatibilitas yang lebih baik -->
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <i class="fas fa-search"></i>
+            <input type="text" id="search-input" placeholder="Cari produk...">
+        </div>
+        
+        <!-- Profile Button (replacing menu-btn) -->
+        <button class="profile-btn" id="profile-btn">
+            <img id="profile-img" src="" alt="Profile"> <!-- Image will be set by JS -->
+            <i id="profile-icon" class="fas fa-user"></i> <!-- Default icon -->
+            <div class="gear-animation-container" id="gear-container">
+                <i class="fas fa-cog gear-icon gear-1"></i>
+                <i class="fas fa-cog gear-icon gear-2"></i>
+            </div>
+        </button>
+        
+        <div class="mobile-menu" id="mobile-menu">
+            <!-- Profile Logo Wrapper (inside dropdown, for expanded view) -->
+            <div class="profile-logo-wrapper">
+                <div class="profile-logo" id="profile-logo-dropdown">
+                    <i class="fas fa-user"></i> <!-- Default icon if no image -->
+                    <!-- Gear animasi baru di dalam dropdown profil -->
+                    <div class="gear-animation-container-dropdown" id="gear-container-dropdown">
+                        <i class="fas fa-cog gear-icon-dropdown gear-dropdown-1"></i>
+                        <i class="fas fa-cog gear-icon-dropdown gear-dropdown-2"></i>
+                    </div>
+                </div>
+                <div class="profile-logo-options" id="profile-logo-options">
+                    <div class="profile-logo-option" id="change-profile-pic">Ganti Foto</div>
+                    <div class="profile-logo-option" id="delete-profile-pic">Hapus Foto</div>
+                </div>
+                <!-- Input file ini sekarang dibuat secara dinamis oleh JavaScript -->
+            </div>
+            <div class="menu-item" onclick="showPage('home')">Home</div>
+            <div class="menu-item" onclick="showPage('products')">List Produk</div>
+            <div class="menu-item" onclick="showPage('script-download')">Free script</div>
+            <div class="menu-item" onclick="showPage('contact')">Kontak</div>
+        </div>
+    </nav>
+
+    <!-- Home Page -->
+    <section id="home-page" class="page active">
+        <div class="home-content scroll-animate"> <!-- Added scroll-animate class -->
+            <h1 class="home-title">
+                <span class="s">S</span>KYZO <span class="w">WEBSITE</span>
+            </h1>
+            <p class="home-desc">
+                Solusi hosting profesional dengan kecepatan tinggi dan dukungan 24/7 untuk kebutuhan bisnis online Anda.
+            </p>
+            
+            <div class="btn-group">
+                <a href="#" class="btn" onclick="showPage('products')">
+                    <i class="fas fa-list"></i> List Produk
+                </a>
+                <a href="#" class="btn" onclick="showPage('contact')">
+                    <i class="fas fa-phone-alt"></i> Hubungi Kami
+                </a>
+            </div>
+
+            <div class="social-media">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram"> 
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Page -->
+    <section id="products-page" class="page">
+        <div class="products-container">
+            <h2 class="page-title scroll-animate">Daftar Produk</h2> <!-- Added scroll-animate class -->
+            
+            <div class="product-card scroll-animate" data-product-name="Panel Hosting"> <!-- Added scroll-animate class -->
+                <h3 class="product-title">Panel Hosting</h3>
+                <!-- Placeholder Catbox.moe URL untuk Panel Hosting -->
+                <img src="https://files.catbox.moe/ra4ek1.jpg" 
+                     alt="Panel Hosting" class="product-image">
+                <div class="ram-selection">
+                    <label for="ram-select">Pilih RAM Server:</label>
+                    <select id="ram-select">
+                        <option value="1GB">1 GB</option>
+                        <option value="2GB">2 GB</option>
+                        <option value="3GB">3 GB</option>
+                        <option value="4GB">4 GB</option>
+                        <option value="5GB">5 GB</option>
+                        <option value="6GB">6 GB</option>
+                        <option value="7GB">7 GB</option>
+                        <option value="8GB">8 GB</option>
+                        <option value="9GB">9 GB</option>
+                        <option value="10GB">10 GB</option>
+                        <option value="Unlimited">Unlimited</option>
+                    </select>
+                </div>
+                <ul class="product-features">
+                    <li><i class="fas fa-server"></i> SSD Storage</li>
+                    <li><i class="fas fa-tachometer-alt"></i> Kecepatan Tinggi</li>
+                    <li><i class="fas fa-shield-alt"></i> SSL Gratis</li>
+                </ul>
+                <a href="#" class="btn" id="buy-panel-btn">
+                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                </a>
+
+                <!-- START: Payment Method Selection -->
+                <div class="payment-method-selection" id="payment-method-selection">
+                    <label for="payment-select">Pilih Metode Pembayaran:</label>
+                    <select id="payment-select">
+                        <option value="dana">DANA</option>
+                        <option value="gopay">GoPay</option>
+                        <option value="ovo">OVO</option>
+                    </select>
+                </div>
+                <!-- END: Payment Method Selection -->
+
+                <!-- START: Payment Details for DANA -->
+                <div class="payment-details" id="payment-dana">
+                    <h3>Pembayaran DANA</h3>
+                    <!-- Ikon DANA -->
+                    <img src="https://files.catbox.moe/5qg5rz.png" alt="DANA Logo">
+                    <p>Transfer ke nomor DANA berikut:</p>
+                    <p><strong>085752107633</strong></p>
+                    <p>Jumlah yang harus dibayar: <strong id="dana-amount">Rp 0</strong></p>
+                    <div class="upload-proof">
+                        <label for="upload-dana" class="upload-btn">
+                            <i class="fas fa-upload"></i> Upload Bukti Transfer
+                        </label>
+                        <input type="file" id="upload-dana" accept="image/*" class="hidden-input">
+                        <div class="image-preview" id="preview-dana">
+                            <img src="" alt="Bukti Transfer" class="preview-img">
+                            <span class="remove-img" title="Hapus Gambar">&times;</span>
+                        </div>
+                    </div>
+                    <p>Setelah transfer dan upload bukti, klik tombol di bawah untuk konfirmasi.</p>
+                    <a href="#" class="btn confirm-payment-btn" data-method="dana">
+                        <i class="fas fa-check-circle"></i> Konfirmasi Pembayaran DANA
+                    </a>
+                    <!-- Tambahan untuk status verifikasi -->
+                    <div class="verification-status" id="dana-verification-status"></div>
+                </div>
+                <!-- END: Payment Details for DANA -->
+
+                <!-- START: Payment Details for GoPay -->
+                <div class="payment-details" id="payment-gopay">
+                    <h3>Pembayaran GoPay</h3>
+                    <!-- Ikon GoPay -->
+                    <img src="https://files.catbox.moe/pjdjeu.png" alt="GoPay Logo">
+                    <p>Transfer ke nomor GoPay berikut:</p>
+                    <p><strong>081234567890</strong></p> <!-- GANTI DENGAN NOMOR GOPAY ANDA -->
+                    <p>Jumlah yang harus dibayar: <strong id="gopay-amount">Rp 0</strong></p>
+                    <div class="upload-proof">
+                        <label for="upload-gopay" class="upload-btn">
+                            <i class="fas fa-upload"></i> Upload Bukti Transfer
+                        </label>
+                        <input type="file" id="upload-gopay" accept="image/*" class="hidden-input">
+                        <div class="image-preview" id="preview-gopay">
+                            <img src="" alt="Bukti Transfer" class="preview-img">
+                            <span class="remove-img" title="Hapus Gambar">&times;</span>
+                        </div>
+                    </div>
+                    <p>Setelah transfer dan upload bukti, klik tombol di bawah untuk konfirmasi.</p>
+                    <a href="#" class="btn confirm-payment-btn" data-method="gopay">
+                        <i class="fas fa-check-circle"></i> Konfirmasi Pembayaran GoPay
+                    </a>
+                    <!-- Tambahan untuk status verifikasi -->
+                    <div class="verification-status" id="gopay-verification-status"></div>
+                </div>
+                <!-- END: Payment Details for GoPay -->
+
+                <!-- START: Payment Details for OVO -->
+                <div class="payment-details" id="payment-ovo">
+                    <h3>Pembayaran OVO</h3>
+                    <!-- Ikon OVO -->
+                    <img src="https://files.catbox.moe/r9x343.png" alt="OVO Logo">
+                    <p>Transfer ke nomor OVO berikut:</p>
+                    <p><strong>087654321098</strong></p> <!-- GANTI DENGAN NOMOR OVO ANDA -->
+                    <p>Jumlah yang harus dibayar: <strong id="ovo-amount">Rp 0</strong></p>
+                    <div class="upload-proof">
+                        <label for="upload-ovo" class="upload-btn">
+                            <i class="fas fa-upload"></i> Upload Bukti Transfer
+                        </label>
+                        <input type="file" id="upload-ovo" accept="image/*" class="hidden-input">
+                        <div class="image-preview" id="preview-ovo">
+                            <img src="" alt="Bukti Transfer" class="preview-img">
+                            <span class="remove-img" title="Hapus Gambar">&times;</span>
+                        </div>
+                    </div>
+                    <p>Setelah transfer dan upload bukti, klik tombol di bawah untuk konfirmasi.</p>
+                    <a href="#" class="btn confirm-payment-btn" data-method="ovo">
+                        <i class="fas fa-check-circle"></i> Konfirmasi Pembayaran OVO
+                    </a>
+                    <!-- Tambahan untuk status verifikasi -->
+                    <div class="verification-status" id="ovo-verification-status"></div>
+                </div>
+                <!-- END: Payment Details for OVO -->
+
+            </div>
+            
+            <div class="product-card scroll-animate" data-product-name="Business Package"> <!-- Added scroll-animate class -->
+                <h3 class="product-title">Business Package</h3>
+                <!-- Placeholder Catbox.moe URL untuk Business Package -->
+                <img src="https://files.catbox.moe/6v100j.jpg" 
+                     alt="Business Hosting" class="product-image">
+                <ul class="product-features">
+                    <li><i class="fas fa-server"></i> 5 GB SSD Storage</li>
+                    <li><i class="fas fa-tachometer-alt"></i> Kecepatan Ekstra</li>
+                    <li><i class="fas fa-shield-alt"></i> SSL & Backup</li>
+                </ul>
+                <a href="https://wa.me/6285752149527?text=Saya%20tertarik%20dengan%20Business%20Package" class="btn">
+                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                </a>
+            </div>
+            
+            <div class="product-card scroll-animate" data-product-name="Bot Whatsapp"> <!-- Added scroll-animate class -->
+                <h3 class="product-title">Bot Whatsapp</h3>
+                <!-- Placeholder Catbox.moe URL untuk Bot Whatsapp -->
+                <img src="https://files.catbox.moe/3vunsd.jpg" 
+                     alt="Script bot wa" class="product-image">
+                <ul class="product-features">
+                    <li><i class="fas fa-server"></i> The Devils ( Exploration )</li>
+                    <li><i class="fas fa-tachometer-alt"></i> Support Wa Bussiness</li>
+                    <li><i class="fas fa-shield-alt"></i> Database Github</li>
+                </ul>
+                <a href="https://wa.me/6285752149527?text=Saya%20tertarik%20dengan%20Business%20Package" class="btn">
+                    <i class="fab fa-whatsapp"></i> Pesan Sekarang
+                </a>
+            </div>
+            
+            <div class="social-media">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram">
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Script Download Page -->
+    <section id="script-download-page" class="page">
+        <div class="products-container">
+            <h2 class="page-title scroll-animate">Script Free</h2> <!-- Added scroll-animate class -->
+
+            <div class="script-download-card scroll-animate" data-script-name="Script Free V1"> <!-- Added scroll-animate class -->
+                <h3 class="product-title">Script Free V1</h3>
+                <!-- Placeholder Catbox.moe URL untuk Script Free V1 -->
+                <img src="https://files.catbox.moe/314pnl.jpg" alt="Free ScriptV1" class="product-image">
+                <ul class="product-features">
+                    <li><i class="fas fa-code"></i> Kode Bersih Tanpa Backdoor</li>
+                    <li><i class="fas fa-mobile-alt"></i> Responsif Untuk Whatsapp Messager</li>
+                    <li><i class="fas fa-palette"></i> Desain Modern & Minimalis</li>
+                </ul>
+                <a href="https://www.mediafire.com/file/le1x9g67iax1ai5/SC_JPMCH_MARCELEVEN_V4.0.zip/file" class="btn download-btn" target="_blank"><i class="fas fa-download"></i> Unduh Sekarang</a>
+            </div>         
+
+            <div class="social-media">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram">
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Page -->
+    <section id="contact-page" class="page">
+        <div class="contact-container">
+            <h2 class="page-title scroll-animate">Hubungi Kami</h2> <!-- Added scroll-animate class -->
+            
+            <div class="contact-card scroll-animate"> <!-- Added scroll-animate class -->
+                <div class="contact-info">
+                    <h3 style="text-align: center; margin-bottom: 20px;">Tim Support Skyzo</h3>
+                    <p><i class="fas fa-phone-alt"></i> +62 857 5214 9527</p>
+                    <p><i class="fas fa-envelope"></i> support@skyzo-website.com</p>
+                    <p style="margin-top: 20px; text-align: center;">Kami siap membantu Anda 24/7 untuk kebutuhan hosting Anda.</p>
+                </div>
+                
+                <a href="https://wa.me/6285752149527" class="btn">
+                    <i class="fab fa-whatsapp"></i> Chat WhatsApp
+                </a>
+            </div>
+            
+            <div class="social-media">
+                <a href="https://t.me/skyzoofficial" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" alt="Telegram">
+                </a>
+                <a href="https://instagram.com/skyzoofficial" target="_blank" class="social-icon">
+                    <!-- Ikon Instagram -->
+                    <img src="https://files.catbox.moe/xycd9c.png" alt="Instagram">
+                </a>
+                <a href="https://wa.me/6285752149527" target="_blank" class="social-icon">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/6285752149527" class="whatsapp-btn">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- JavaScript -->
+    <script>
+        // Profile Button & Mobile Menu (now profile dropdown)
+        const profileBtn = document.getElementById('profile-btn');
+        const profileImg = document.getElementById('profile-img');
+        const profileIcon = document.getElementById('profile-icon');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const profileLogoDropdown = document.getElementById('profile-logo-dropdown'); // The larger profile logo inside dropdown
+        const profileLogoOptions = document.getElementById('profile-logo-options');
+        const changeProfilePicBtn = document.getElementById('change-profile-pic');
+        const deleteProfilePicBtn = document.getElementById('delete-profile-pic');
+        const menuItems = mobileMenu.querySelectorAll('.menu-item');
+        const body = document.body; // Get the body element for blur effect
+
+        let uploadProfilePicInput; 
+        const defaultProfilePic = ''; // Keep empty for default icon
+
+        // Function to set profile picture for both main button and dropdown
+        function setProfilePic(url) {
+            if (url) {
+                profileImg.src = url;
+                profileImg.style.display = 'block';
+                profileIcon.style.display = 'none';
+
+                profileLogoDropdown.style.backgroundImage = `url("${url}")`;
+                profileLogoDropdown.innerHTML = ''; // Remove default icon
+                localStorage.setItem('profilePicUrl', url);
+            } else {
+                profileImg.src = '';
+                profileImg.style.display = 'none';
+                profileIcon.style.display = 'block';
+
+                profileLogoDropdown.style.backgroundImage = 'none';
+                profileLogoDropdown.innerHTML = '<i class="fas fa-user"></i>'; // Show default icon
+                localStorage.removeItem('profilePicUrl');
+            }
+        }
+
+        // Function to create and manage the hidden file input
+        function createHiddenFileInput() {
+            if (uploadProfilePicInput) {
+                uploadProfilePicInput.remove();
+            }
+            
+            uploadProfilePicInput = document.createElement('input');
+            uploadProfilePicInput.type = 'file';
+            uploadProfilePicInput.accept = 'image/*';
+            uploadProfilePicInput.style.display = 'none';
+            document.body.appendChild(uploadProfilePicInput);
+
+            uploadProfilePicInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        setProfilePic(e.target.result);
+                        profileLogoDropdown.classList.remove('expanded'); // Collapse dropdown logo
+                        profileLogoOptions.classList.remove('active'); // Hide options
+                    };
+                    reader.readAsDataURL(file);
+                }
+                this.value = ''; 
+            });
+        }
+
+        // Load profile picture on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            createHiddenFileInput();
+            const savedProfilePic = localStorage.getItem('profilePicUrl');
+            if (savedProfilePic) {
+                setProfilePic(savedProfilePic);
+            } else {
+                setProfilePic(defaultProfilePic);
+            }
+        });
+
+        // Gear Animation Elements (untuk tombol profil)
+        const gearContainer = document.getElementById('gear-container');
+        const gear1 = document.querySelector('.gear-1');
+        const gear2 = document.querySelector('.gear-2');
+
+        // Gear Animation Elements (untuk dropdown profil)
+        const gearContainerDropdown = document.getElementById('gear-container-dropdown');
+        const gearDropdown1 = document.querySelector('.gear-dropdown-1');
+        const gearDropdown2 = document.querySelector('.gear-dropdown-2');
+
+        let rotationAngle = 0;
+        let animationFrameId = null;
+        const rotationSpeed = 2; // Kecepatan putaran (derajat per frame)
+
+        // Function to update gear rotation
+        function animateGears() {
+            rotationAngle = (rotationAngle + rotationSpeed) % 360; // Putar searah jarum jam
+            const counterRotationAngle = (rotationAngle * -1) % 360; // Putar berlawanan arah jarum jam
+
+            // Apply rotation to small gears (profile button)
+            if (gear1 && gear2) {
+                gear1.style.transform = `translate(-20%, -20%) rotate(${rotationAngle}deg)`;
+                gear2.style.transform = `translate(20%, 20%) rotate(${counterRotationAngle}deg)`;
+            }
+
+            // Apply rotation to large gears (profile dropdown)
+            if (gearDropdown1 && gearDropdown2) {
+                gearDropdown1.style.transform = `translate(-30%, -30%) rotate(${counterRotationAngle}deg)`; // Putar berlawanan
+                gearDropdown2.style.transform = `translate(30%, 30%) rotate(${rotationAngle}deg)`; // Putar searah
+            }
+
+            animationFrameId = requestAnimationFrame(animateGears);
+        }
+
+        // Function to start gear rotation
+        function startGearRotation() {
+            gearContainer.classList.add('active'); // Show small gears
+            gearContainerDropdown.classList.add('active'); // Show large gears
+
+            if (!animationFrameId) { // Start animation loop only if not already running
+                animateGears();
+            }
+        }
+
+        // Function to stop gear rotation and hide them
+        function stopGearRotation() {
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
+            }
+
+            // Sembunyikan gear setelah sedikit penundaan untuk efek visual
+            setTimeout(() => {
+                gearContainer.classList.remove('active'); // Hide small gears
+                gearContainerDropdown.classList.remove('active'); // Hide large gears
+            }, 300); // Penundaan singkat untuk transisi opacity
+        }
+
+        // Toggle mobile menu (profile dropdown) and blur effect
+        profileBtn.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent click from closing immediately
+            mobileMenu.classList.toggle('active');
+            body.classList.toggle('blur-active'); // Toggle blur class on body
+
+            if (mobileMenu.classList.contains('active')) {
+                startGearRotation(); // Start rotation when menu opens
+                // Show profile logo wrapper without delay
+                const profileLogoWrapper = mobileMenu.querySelector('.profile-logo-wrapper');
+                if (profileLogoWrapper) {
+                    profileLogoWrapper.style.transform = 'translateY(0)';
+                    profileLogoWrapper.style.opacity = '1';
+                    profileLogoWrapper.style.transitionDelay = '0s';
+                }
+
+                // Animate menu items with delay
+                menuItems.forEach((item, index) => {
+                    item.style.setProperty('--item-delay', `${(index * 0.05) + 0.1}s`);
+                });
+            } else {
+                stopGearRotation(); // Stop rotation when menu closes
+                // Reset delay when closing
+                menuItems.forEach((item) => {
+                    item.style.setProperty('--item-delay', '0s');
+                });
+                // Hide profile logo wrapper immediately when closing
+                const profileLogoWrapper = mobileMenu.querySelector('.profile-logo-wrapper');
+                if (profileLogoWrapper) {
+                    profileLogoWrapper.style.transform = 'translateY(-100%)';
+                    profileLogoWrapper.style.opacity = '0';
+                }
+                // Hide profile logo options if menu is closed
+                profileLogoDropdown.classList.remove('expanded');
+                profileLogoOptions.classList.remove('active');
+            }
+        });
+
+        // Toggle profile logo expansion and options inside dropdown
+        profileLogoDropdown.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevent click from propagating to document
+            profileLogoDropdown.classList.toggle('expanded');
+            profileLogoOptions.classList.toggle('active');
+        });
+
+        // Handle "Ganti Foto" click
+        changeProfilePicBtn.addEventListener('click', function() {
+            if (!uploadProfilePicInput) {
+                createHiddenFileInput();
+            }
+            uploadProfilePicInput.click();
+        });
+
+        // Handle "Hapus Foto" click
+        deleteProfilePicBtn.addEventListener('click', function() {
+            setProfilePic(defaultProfilePic); // Reset to default
+            profileLogoDropdown.classList.remove('expanded'); // Collapse dropdown logo
+            profileLogoOptions.classList.remove('active'); // Hide options
+        });
+
+        // Close menu and options when clicking outside
+        document.addEventListener('click', function(e) {
+            // Check if the click is outside the mobile menu itself AND outside the profile button
+            if (!e.target.closest('#mobile-menu') && !e.target.closest('#profile-btn') && mobileMenu.classList.contains('active')) {
+                mobileMenu.classList.remove('active');
+                body.classList.remove('blur-active'); // Remove blur class
+                stopGearRotation(); // Stop rotation when menu closes from outside
+                // Hide profile logo wrapper immediately when closing from outside
+                const profileLogoWrapper = mobileMenu.querySelector('.profile-logo-wrapper');
+                if (profileLogoWrapper) {
+                    profileLogoWrapper.style.transform = 'translateY(-100%)';
+                    profileLogoWrapper.style.opacity = '0';
+                }
+                // Hide profile logo options if menu is closed from outside
+                profileLogoDropdown.classList.remove('expanded');
+                profileLogoOptions.classList.remove('active');
+            }
+            // If only options are open and clicked outside options or logo
+            if (!e.target.closest('.profile-logo-wrapper') && profileLogoOptions.classList.contains('active')) {
+                profileLogoDropdown.classList.remove('expanded');
+                profileLogoOptions.classList.remove('active');
+            }
+        });
+
+        // Page Navigation
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.getElementById(pageId + '-page').classList.add('active');
+            
+            // Close mobile menu (profile dropdown) and remove blur
+            mobileMenu.classList.remove('active');
+            body.classList.remove('blur-active'); // Remove blur class
+            stopGearRotation(); // Stop rotation when navigating to another page
+            const profileLogoWrapper = mobileMenu.querySelector('.profile-logo-wrapper');
+            if (profileLogoWrapper) {
+                profileLogoWrapper.style.transform = 'translateY(-100%)';
+                profileLogoWrapper.style.opacity = '0';
+            }
+            profileLogoDropdown.classList.remove('expanded');
+            profileLogoOptions.classList.remove('active');
+        }
+
+        document.querySelectorAll('[href="#"]').forEach(btn => {
+            btn.addEventListener('click', e => e.preventDefault());
+        });
+
+        // --- JavaScript for Panel Hosting Purchase with Multiple Payment Methods ---
+        const ramSelect = document.getElementById('ram-select');
+        const buyPanelBtn = document.getElementById('buy-panel-btn');
+        const paymentMethodSelection = document.getElementById('payment-method-selection');
+        const paymentSelect = document.getElementById('payment-select');
+        const paymentDetailsDivs = document.querySelectorAll('.payment-details');
+        const confirmPaymentBtns = document.querySelectorAll('.confirm-payment-btn');
+
+        const ramPrices = {
+            '1GB': 2000, '2GB': 3000, '3GB': 4000, '4GB': 5000, '5GB': 6000,
+            '6GB': 7000, '7GB': 8000, '8GB': 9000, '9GB': 10000, '10GB': 11000,
+            'Unlimited': 20000, 
+        };
+
+        const paymentNumbers = {
+            'dana': '6285752107633',
+            'gopay': '6281234567890',
+            'ovo': '6287654321098'
+        };
+
+        // Nomor WhatsApp tujuan untuk konfirmasi
+        const confirmationWhatsappNumber = '6285742149527'; 
+
+        // Kunci localStorage untuk menyimpan percobaan gagal
+        const FAILED_ATTEMPTS_KEY = 'failedPaymentAttempts';
+        const BLOCKED_UNTIL_KEY = 'blockedUntil';
+        const MAX_FAILED_ATTEMPTS = 3; // Batas percobaan gagal
+
+        let selectedRam = ramSelect.value;
+        let currentPrice = ramPrices[selectedRam];
+
+        // Fungsi untuk mendapatkan percobaan gagal dari localStorage
+        function getFailedAttempts() {
+            const attempts = localStorage.getItem(FAILED_ATTEMPTS_KEY);
+            return attempts ? parseInt(attempts) : 0;
+        }
+
+        // Fungsi untuk mengatur percobaan gagal ke localStorage
+        function setFailedAttempts(attempts) {
+            localStorage.setItem(FAILED_ATTEMPTS_KEY, attempts);
+        }
+
+        // Fungsi untuk memeriksa apakah pengguna diblokir
+        function isUserBlocked() {
+            const blockedUntil = localStorage.getItem(BLOCKED_UNTIL_KEY);
+            if (!blockedUntil) {
+                return false;
+            }
+            const blockTimestamp = parseInt(blockedUntil);
+            return Date.now() < blockTimestamp;
+        }
+
+        // Fungsi untuk memblokir pengguna sementara
+        function blockUserTemporarily(durationMinutes = 5) {
+            const blockDurationMs = durationMinutes * 60 * 1000;
+            const blockedUntil = Date.now() + blockDurationMs;
+            localStorage.setItem(BLOCKED_UNTIL_KEY, blockedUntil);
+            setFailedAttempts(0); // Reset percobaan gagal setelah diblokir
+            alert(`Anda telah diblokir sementara selama ${durationMinutes} menit karena terlalu banyak percobaan pembayaran yang gagal. Silakan coba lagi nanti.`);
+        }
+
+        function updatePaymentAmounts() {
+            document.getElementById('dana-amount').textContent = `Rp ${currentPrice.toLocaleString('id-ID')}`;
+            document.getElementById('gopay-amount').textContent = `Rp ${currentPrice.toLocaleString('id-ID')}`;
+            document.getElementById('ovo-amount').textContent = `Rp ${currentPrice.toLocaleString('id-ID')}`;
+        }
+
+        ramSelect.addEventListener('change', function() {
+            selectedRam = this.value;
+            currentPrice = ramPrices[selectedRam];
+            updatePaymentAmounts();
+        });
+
+        buyPanelBtn.addEventListener('click', function() {
+            paymentMethodSelection.classList.add('active');
+            paymentDetailsDivs.forEach(div => div.classList.remove('active'));
+            document.getElementById('payment-' + paymentSelect.value).classList.add('active');
+            updatePaymentAmounts();
+            
+            paymentMethodSelection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        paymentSelect.addEventListener('change', function() {
+            const selectedMethod = this.value;
+            paymentDetailsDivs.forEach(div => div.classList.remove('active'));
+            document.getElementById('payment-' + selectedMethod).classList.add('active');
+            
+            document.getElementById('payment-' + selectedMethod).scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // --- Image Upload Functionality ---
+        function setupImageUpload(method) {
+            const uploadInput = document.getElementById(`upload-${method}`);
+            const imagePreviewDiv = document.getElementById(`preview-${method}`);
+            const previewImg = imagePreviewDiv.querySelector('.preview-img');
+            const removeImgBtn = imagePreviewDiv.querySelector('.remove-img');
+
+            uploadInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        imagePreviewDiv.classList.add('active');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImg.src = '';
+                    imagePreviewDiv.classList.remove('active');
+                }
+            });
+
+            removeImgBtn.addEventListener('click', function() {
+                previewImg.src = '';
+                imagePreviewDiv.classList.remove('active');
+                uploadInput.value = '';
+            });
+        }
+
+        setupImageUpload('dana');
+        setupImageUpload('gopay');
+        setupImageUpload('ovo');
+
+        // Fungsi untuk mensimulasikan verifikasi bukti pembayaran
+        // Dalam implementasi nyata, ini akan menjadi panggilan API ke backend
+        async function simulateVerification(method, imageUrl, expectedAmount) {
+            return new Promise(resolve => {
+                // Simulasi penundaan jaringan
+                setTimeout(() => {
+                    let isAuthentic = false;
+                    let message = '';
+
+                    // --- Logika Simulasi Keaslian (Sangat Sederhana) ---
+                    // Dalam dunia nyata, ini akan melibatkan:
+                    // 1. Pengiriman gambar ke server.
+                    // 2. Server menggunakan OCR untuk membaca teks dari gambar (jumlah, nama, tanggal).
+                    // 3. Server membandingkan data OCR dengan data transaksi yang diharapkan.
+                    // 4. Server mungkin menggunakan AI/ML untuk mendeteksi manipulasi visual.
+                    // 5. Server mungkin memverifikasi langsung dengan API penyedia pembayaran.
+
+                    // Contoh simulasi:
+                    // Anggap "asli" jika gambar mengandung "unsplash" dan jumlahnya benar
+                    // Anggap "palsu" jika gambar mengandung "unsplash" TAPI jumlahnya salah
+                    // Anggap "mencurigakan" jika gambar tidak dari "unsplash" (simulasi gambar yang tidak dikenal)
+
+                    if (!imageUrl) {
+                        message = 'Tidak ada bukti pembayaran yang diunggah.';
+                        isAuthentic = false;
+                    } else if (imageUrl.includes('unsplash.com')) {
+                        // Simulasi deteksi jumlah yang benar/salah
+                        // Anggap jumlah yang benar adalah kelipatan 1000 dan lebih dari 0
+                        if (expectedAmount > 0 && expectedAmount % 1000 === 0) {
+                            isAuthentic = true;
+                            message = 'Bukti pembayaran terverifikasi. Transaksi berhasil!';
+                        } else {
+                            isAuthentic = false;
+                            message = 'Jumlah pada bukti pembayaran tidak sesuai atau mencurigakan.';
+                        }
+                    } else {
+                        isAuthentic = false;
+                        message = 'Bukti pembayaran tidak dikenali atau mencurigakan. Mohon gunakan gambar yang valid.';
+                    }
+
+                    resolve({
+                        isAuthentic: isAuthentic,
+                        message: message
+                    });
+                }, 1500); // Simulasi 1.5 detik proses verifikasi
+            });
+        }
+
+        // Fungsi untuk memperbarui tampilan status verifikasi
+        function updateVerificationStatusDisplay(method, status) {
+            const statusDiv = document.getElementById(`${method}-verification-status`);
+            if (statusDiv) {
+                statusDiv.textContent = status.message;
+                statusDiv.style.display = 'block';
+                if (status.isAuthentic) {
+                    statusDiv.style.color = '#4CAF50'; // Hijau untuk berhasil
+                    statusDiv.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                } else {
+                    statusDiv.style.color = '#F44336'; // Merah untuk gagal
+                    statusDiv.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+                }
+            }
+        }
+
+        confirmPaymentBtns.forEach(button => {
+            button.addEventListener('click', async (e) => {
+                e.preventDefault();
+
+                if (isUserBlocked()) {
+                    const blockedUntil = new Date(parseInt(localStorage.getItem(BLOCKED_UNTIL_KEY)));
+                    const remainingTime = Math.ceil((blockedUntil.getTime() - Date.now()) / (60 * 1000));
+                    alert(`Anda masih diblokir. Silakan coba lagi dalam ${remainingTime} menit.`);
+                    return;
+                }
+
+                const method = button.dataset.method;
+                const uploadInput = document.getElementById(`upload-${method}`);
+                const imagePreviewDiv = document.getElementById(`preview-${method}`);
+                const previewImg = imagePreviewDiv.querySelector('.preview-img');
+                const statusDiv = document.getElementById(`${method}-verification-status`);
+
+                // Sembunyikan status sebelumnya
+                if (statusDiv) {
+                    statusDiv.style.display = 'none';
+                }
+
+                if (!uploadInput.files || uploadInput.files.length === 0) {
+                    alert('Mohon upload bukti transfer Anda terlebih dahulu.');
+                    return;
+                }
+
+                const paymentMethodName = method.toUpperCase();
+                let selectedRam = ramSelect.value;
+                let currentPrice = ramPrices[selectedRam];
+
+                // Dapatkan jumlah yang diharapkan dari elemen yang sesuai
+                let expectedAmount = currentPrice; // Menggunakan currentPrice sebagai expectedAmount
+
+                // Tampilkan pesan loading
+                alert(`Memverifikasi pembayaran ${paymentMethodName} Anda. Mohon tunggu sebentar...`);
+
+                // Panggil fungsi simulasi verifikasi
+                const verificationResult = await simulateVerification(method, previewImg.src, expectedAmount);
+
+                // Perbarui status verifikasi di UI
+                updateVerificationStatusDisplay(method, verificationResult);
+
+                if (verificationResult.isAuthentic) {
+                    setFailedAttempts(0); // Reset percobaan gagal jika berhasil
+                    const message = `Halo, saya sudah melakukan transfer ${paymentMethodName} untuk Panel Hosting dengan RAM ${selectedRam} sebesar Rp ${currentPrice.toLocaleString('id-ID')}. Mohon konfirmasi pesanan saya.`;
+
+                    alert('Verifikasi berhasil! Anda akan diarahkan ke WhatsApp untuk konfirmasi lebih lanjut.');
+                    setTimeout(() => {
+                        const whatsappUrl = `https://wa.me/${confirmationWhatsappNumber}?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+
+                        // Reset UI setelah konfirmasi berhasil
+                        paymentMethodSelection.classList.remove('active');
+                        paymentDetailsDivs.forEach(div => div.classList.remove('active'));
+                        previewImg.src = '';
+                        imagePreviewDiv.classList.remove('active');
+                        uploadInput.value = ''; // Clear the file input
+                    }, 2000); // Beri waktu pengguna melihat status verifikasi sebelum diarahkan ke WA
+                } else {
+                    let failedAttempts = getFailedAttempts();
+                    failedAttempts++;
+                    setFailedAttempts(failedAttempts);
+
+                    if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
+                        blockUserTemporarily(5); // Blokir selama 5 menit
+                    } else {
+                        alert(`Verifikasi pembayaran gagal. Anda memiliki ${MAX_FAILED_ATTEMPTS - failedAttempts} percobaan tersisa sebelum diblokir sementara. Silakan coba lagi.`);
+                    }
+                }
+            });
+        });
+
+        updatePaymentAmounts();
+
+        // --- Search Functionality (Fixed width) ---
+        const searchInput = document.getElementById('search-input');
+        const searchContainer = document.querySelector('.search-container');
+        const productCards = document.querySelectorAll('.product-card');
+        const scriptDownloadCards = document.querySelectorAll('.script-download-card');
+
+        // Event listener for input focus (to add highlight)
+        searchInput.addEventListener('focus', function() {
+            searchContainer.classList.add('active');
+            // Optional: Scroll to products page if not already there
+            if (!document.getElementById('products-page').classList.contains('active') &&
+                !document.getElementById('script-download-page').classList.contains('active')) {
+                showPage('products'); // Or the relevant page
+            }
+        });
+
+        // Event listener for input blur (to remove highlight)
+        searchInput.addEventListener('blur', function() {
+            searchContainer.classList.remove('active');
+        });
+
+        // Event listener for keyup to filter results
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = searchInput.value.toLowerCase();
+
+            productCards.forEach(card => {
+                const productName = card.dataset.productName.toLowerCase();
+                if (productName.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            scriptDownloadCards.forEach(card => {
+                const scriptName = card.dataset.scriptName ? card.dataset.scriptName.toLowerCase() : card.querySelector('.product-title').textContent.toLowerCase();
+                if (scriptName.includes(searchTerm)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        });
+
+        // Ensure data-script-name is set for all script cards for proper filtering
+        document.querySelectorAll('.script-download-card').forEach(card => {
+            if (!card.dataset.scriptName) {
+                card.setAttribute('data-script-name', card.querySelector('.product-title').textContent.trim());
+            }
+        });
+
+        // UPDATED: JavaScript for Scroll Animation with Staggered Effect and Re-triggering
+        document.addEventListener('DOMContentLoaded', function() {
+            const scrollAnimatedElements = document.querySelectorAll('.scroll-animate');
+
+            const observerOptions = {
+                root: null, // Use the viewport as the root
+                rootMargin: '0px',
+                threshold: 0.2 // Trigger when 20% of the element is visible
+            };
+
+            const observer = new IntersectionObserver((entries) => { // Removed 'observer' from parameters as we don't unobserve
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Apply staggered delay for elements within the same container
+                        const parentContainer = entry.target.closest('.products-container, .home-content, .contact-container');
+                        if (parentContainer) {
+                            // Only apply delay if the element is not already active (to prevent re-applying delay on scroll up/down)
+                            if (!entry.target.classList.contains('active')) {
+                                const siblings = Array.from(parentContainer.querySelectorAll('.scroll-animate'));
+                                const index = siblings.indexOf(entry.target);
+                                if (index !== -1) {
+                                    entry.target.style.transitionDelay = `${index * 0.1}s`; // 100ms delay per item
+                                }
+                            }
+                        }
+                        entry.target.classList.add('active');
+                    } else {
+                        // Element is no longer intersecting, remove 'active' class to reset its state
+                        entry.target.classList.remove('active');
+                        entry.target.style.transitionDelay = '0s'; // Reset delay when out of view
+                    }
+                });
+            }, observerOptions);
+
+            scrollAnimatedElements.forEach(element => {
+                observer.observe(element);
+            });
+        });
+    </script>
+</body>
+</html>
